@@ -4,18 +4,26 @@
 
     <item
         android:id="@+id/action_now"
+        android:checkable="true"
         android:title="@string/action_now"
         app:showAsAction="never" />
+
     <item
         android:id="@+id/action_popular"
+        android:checkable="true"
+        android:checked="true"
         android:title="@string/action_popular"
         app:showAsAction="never" />
+
     <item
         android:id="@+id/action_top"
+        android:checkable="true"
         android:title="@string/action_top"
         app:showAsAction="never" />
+
     <item
         android:id="@+id/action_upcoming"
+        android:checkable="true"
         android:title="@string/action_upcoming"
         app:showAsAction="never" />
 </menu>

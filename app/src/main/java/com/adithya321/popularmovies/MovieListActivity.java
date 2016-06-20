@@ -44,11 +44,12 @@ public class MovieListActivity extends AppCompatActivity {
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet device.
      */
     private boolean mTwoPane;
-    private MoviesAdapter moviesAdapter;
     private GridView gridView;
 
     private String MOVIES_BASE_URL = "http://api.themoviedb.org/3/movie/";
     private String MOVIES_URL;
+
+    private Menu menu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -155,7 +156,7 @@ public class MovieListActivity extends AppCompatActivity {
         protected void onPostExecute(Movie[] movies) {
             super.onPostExecute(movies);
 
-            moviesAdapter = new MoviesAdapter(getApplicationContext(), Arrays.asList(movies));
+            MoviesAdapter moviesAdapter = new MoviesAdapter(getApplicationContext(), Arrays.asList(movies));
             gridView.setAdapter(moviesAdapter);
         }
 
@@ -188,11 +189,16 @@ public class MovieListActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
+
+        this.menu = menu;
+
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
+        setMenuItemsChecked(item.getItemId());
 
         switch (item.getItemId()) {
             case R.id.action_now:
@@ -212,5 +218,14 @@ public class MovieListActivity extends AppCompatActivity {
         new FetchMoviesTask().execute();
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void setMenuItemsChecked(int id) {
+        int items[] = {R.id.action_now, R.id.action_popular, R.id.action_top, R.id.action_upcoming};
+
+        for (int item : items) {
+            if (item == id) menu.findItem(item).setChecked(true);
+            else menu.findItem(item).setChecked(false);
+        }
     }
 }
