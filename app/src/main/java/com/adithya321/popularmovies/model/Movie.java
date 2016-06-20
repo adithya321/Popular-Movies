@@ -1,6 +1,9 @@
 package com.adithya321.popularmovies.model;
 
-public class Movie {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class Movie implements Parcelable {
     String title;
     String imagePath;
 
@@ -27,5 +30,16 @@ public class Movie {
 
     public String getImagePath() {
         return imagePath;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(title);
+        parcel.writeString(imagePath);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
     }
 }

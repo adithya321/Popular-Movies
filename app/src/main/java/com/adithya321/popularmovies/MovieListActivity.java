@@ -4,8 +4,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -28,6 +26,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -50,6 +49,9 @@ public class MovieListActivity extends AppCompatActivity {
     private String MOVIES_URL;
 
     private Menu menu;
+    private ArrayList<Movie> movieList;
+    private int checkedMenuId;
+    private Bundle savedInstance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,15 +61,6 @@ public class MovieListActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         gridView = (GridView) findViewById(R.id.movie_grid);
         assert gridView != null;
@@ -92,14 +85,26 @@ public class MovieListActivity extends AppCompatActivity {
             }
         });
 
-        MOVIES_URL = MOVIES_BASE_URL + "popular?";
-        new FetchMoviesTask().execute();
-
         if (findViewById(R.id.movie_detail_container) != null) {
             // The detail container view will be present only in the large-screen layouts (res/values-w900dp).
             // If this view is present, then the activity should be in two-pane mode.
             mTwoPane = true;
         }
+
+        if (savedInstanceState != null) {
+            movieList = savedInstanceState.getParcelableArrayList("movieList");
+            setGridViewAdapter();
+
+            savedInstance = savedInstanceState;
+        } else {
+            MOVIES_URL = MOVIES_BASE_URL + "popular?";
+            new FetchMoviesTask().execute(MOVIES_URL);
+        }
+    }
+
+    private void setGridViewAdapter() {
+        MoviesAdapter moviesAdapter = new MoviesAdapter(getApplicationContext(), movieList);
+        gridView.setAdapter(moviesAdapter);
     }
 
     public class FetchMoviesTask extends AsyncTask<String, Void, Movie[]> {
@@ -114,7 +119,7 @@ public class MovieListActivity extends AppCompatActivity {
             String moviesJsonStr;
 
             try {
-                Uri builtUri = Uri.parse(MOVIES_URL).buildUpon()
+                Uri builtUri = Uri.parse(strings[0]).buildUpon()
                         .appendQueryParameter("api_key", getString(R.string.api_key))
                         .build();
 
@@ -156,8 +161,8 @@ public class MovieListActivity extends AppCompatActivity {
         protected void onPostExecute(Movie[] movies) {
             super.onPostExecute(movies);
 
-            MoviesAdapter moviesAdapter = new MoviesAdapter(getApplicationContext(), Arrays.asList(movies));
-            gridView.setAdapter(moviesAdapter);
+            movieList = new ArrayList<>(Arrays.asList(movies));
+            setGridViewAdapter();
         }
 
         private Movie[] getMovieDataFromJson(String moviesJsonStr, int numMovies) throws JSONException {
@@ -192,12 +197,16 @@ public class MovieListActivity extends AppCompatActivity {
 
         this.menu = menu;
 
+        if (savedInstance != null)
+            setMenuItemsChecked(savedInstance.getInt("sort"));
+
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
+        checkedMenuId = item.getItemId();
         setMenuItemsChecked(item.getItemId());
 
         switch (item.getItemId()) {
@@ -215,7 +224,7 @@ public class MovieListActivity extends AppCompatActivity {
                 break;
         }
 
-        new FetchMoviesTask().execute();
+        new FetchMoviesTask().execute(MOVIES_URL);
 
         return super.onOptionsItemSelected(item);
     }
@@ -227,5 +236,12 @@ public class MovieListActivity extends AppCompatActivity {
             if (item == id) menu.findItem(item).setChecked(true);
             else menu.findItem(item).setChecked(false);
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putParcelableArrayList("movieList", movieList);
+        outState.putInt("sort", checkedMenuId);
+        super.onSaveInstanceState(outState);
     }
 }
