@@ -2,11 +2,15 @@ package com.adithya321.popularmovies.model;
 
 public class Movie {
     String title;
-    int image;
+    String imagePath;
 
-    public Movie(String title, int image) {
+    public Movie() {
+
+    }
+
+    public Movie(String title, String imagePath) {
         this.title = title;
-        this.image = image;
+        this.imagePath = imagePath;
     }
 
     public void setTitle(String title) {
@@ -17,11 +21,11 @@ public class Movie {
         return title;
     }
 
-    public void setImage(int image) {
-        this.image = image;
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
     }
 
-    public int getImage() {
-        return image;
+    public String getImagePath() {
+        return imagePath;
     }
 }

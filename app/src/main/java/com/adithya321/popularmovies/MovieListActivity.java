@@ -26,8 +26,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 /**
  * An activity representing a grid of Movies. This activity
@@ -96,12 +95,12 @@ public class MovieListActivity extends AppCompatActivity {
         }
     }
 
-    public class FetchMoviesTask extends AsyncTask<String, Void, String[]> {
+    public class FetchMoviesTask extends AsyncTask<String, Void, Movie[]> {
 
         private final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
 
         @Override
-        protected String[] doInBackground(String... strings) {
+        protected Movie[] doInBackground(String... strings) {
 
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
@@ -146,39 +145,40 @@ public class MovieListActivity extends AppCompatActivity {
                 Log.e(LOG_TAG, e.toString());
             }
 
-            return new String[0];
+            return new Movie[0];
         }
 
         @Override
-        protected void onPostExecute(String[] strings) {
-            super.onPostExecute(strings);
+        protected void onPostExecute(Movie[] movies) {
+            super.onPostExecute(movies);
 
-            List<Movie> movieList = new ArrayList<>();
-            for (String movie : strings) {
-                movieList.add(new Movie(movie, R.mipmap.ic_launcher));
-            }
-            moviesAdapter = new MoviesAdapter(getApplicationContext(), movieList);
+            moviesAdapter = new MoviesAdapter(getApplicationContext(), Arrays.asList(movies));
             gridView.setAdapter(moviesAdapter);
         }
 
-        private String[] getMovieDataFromJson(String moviesJsonStr, int numMovies) throws JSONException {
+        private Movie[] getMovieDataFromJson(String moviesJsonStr, int numMovies) throws JSONException {
 
             final String TMDB_LIST = "results";
             final String TMDB_TITLE = "title";
+            final String TMDB_POSTER = "poster_path";
 
             JSONObject moviesJson = new JSONObject(moviesJsonStr);
             JSONArray moviesArray = moviesJson.getJSONArray(TMDB_LIST);
 
-            String[] resultStrs = new String[numMovies];
+            Movie[] resultMovies = new Movie[numMovies];
 
             for (int i = 0; i < numMovies; i++) {
                 JSONObject movieDetails = moviesArray.getJSONObject(i);
-                String title = movieDetails.getString(TMDB_TITLE);
 
-                resultStrs[i] = title;
+                String title = movieDetails.getString(TMDB_TITLE);
+                String image = movieDetails.getString(TMDB_POSTER);
+
+                resultMovies[i] = new Movie();
+                resultMovies[i].setTitle(title);
+                resultMovies[i].setImagePath("http://image.tmdb.org/t/p/w185" + image);
             }
 
-            return resultStrs;
+            return resultMovies;
         }
     }
 }
