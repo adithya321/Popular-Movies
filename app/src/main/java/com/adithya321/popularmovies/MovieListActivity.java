@@ -9,6 +9,8 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
@@ -44,6 +46,9 @@ public class MovieListActivity extends AppCompatActivity {
     private boolean mTwoPane;
     private MoviesAdapter moviesAdapter;
     private GridView gridView;
+
+    private String MOVIES_BASE_URL = "http://api.themoviedb.org/3/movie/";
+    private String MOVIES_URL;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,6 +91,7 @@ public class MovieListActivity extends AppCompatActivity {
             }
         });
 
+        MOVIES_URL = MOVIES_BASE_URL + "popular?";
         new FetchMoviesTask().execute();
 
         if (findViewById(R.id.movie_detail_container) != null) {
@@ -102,15 +108,12 @@ public class MovieListActivity extends AppCompatActivity {
         @Override
         protected Movie[] doInBackground(String... strings) {
 
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
-
-            String moviesJsonStr = null;
+            HttpURLConnection urlConnection;
+            BufferedReader reader;
+            String moviesJsonStr;
 
             try {
-                final String MOVIES_BASE_URL = "http://api.themoviedb.org/3/movie/popular?";
-
-                Uri builtUri = Uri.parse(MOVIES_BASE_URL).buildUpon()
+                Uri builtUri = Uri.parse(MOVIES_URL).buildUpon()
                         .appendQueryParameter("api_key", getString(R.string.api_key))
                         .build();
 
@@ -180,5 +183,34 @@ public class MovieListActivity extends AppCompatActivity {
 
             return resultMovies;
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.action_now:
+                MOVIES_URL = MOVIES_BASE_URL + "now_playing?";
+                break;
+            case R.id.action_popular:
+                MOVIES_URL = MOVIES_BASE_URL + "popular?";
+                break;
+            case R.id.action_top:
+                MOVIES_URL = MOVIES_BASE_URL + "top_rated?";
+                break;
+            case R.id.action_upcoming:
+                MOVIES_URL = MOVIES_BASE_URL + "upcoming?";
+                break;
+        }
+
+        new FetchMoviesTask().execute();
+
+        return super.onOptionsItemSelected(item);
     }
 }

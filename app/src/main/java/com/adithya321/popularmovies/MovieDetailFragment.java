@@ -23,8 +23,9 @@ public class MovieDetailFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.movie_detail, container, false);
 
         if (getArguments().containsKey(ARG_ITEM_ID)) {
             Activity activity = this.getActivity();
@@ -32,15 +33,7 @@ public class MovieDetailFragment extends Fragment {
             if (appBarLayout != null) {
                 appBarLayout.setTitle(getArguments().getString(ARG_ITEM_ID));
             }
-        }
-    }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.movie_detail, container, false);
-
-        if (getArguments().containsKey(ARG_ITEM_ID)) {
             ((TextView) rootView.findViewById(R.id.movie_detail)).setText(getArguments().getString(ARG_ITEM_ID));
         }
 

@@ -3,4 +3,9 @@
     <string name="title_movie_detail">Movie Detail</string>
 
     <string name="movie_grid_item_description">Movie Thumbnail</string>
+
+    <string name="action_now">Now playing</string>
+    <string name="action_popular">Popular</string>
+    <string name="action_top">Top rated</string>
+    <string name="action_upcoming">Upcoming</string>
 </resources>
