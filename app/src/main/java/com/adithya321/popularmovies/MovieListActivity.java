@@ -12,7 +12,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.TextView;
 
 import com.adithya321.popularmovies.adapters.MoviesAdapter;
 import com.adithya321.popularmovies.model.Movie;
@@ -67,10 +66,9 @@ public class MovieListActivity extends AppCompatActivity {
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                TextView title = (TextView) view.findViewById(R.id.movie_title);
                 if (mTwoPane) {
                     Bundle arguments = new Bundle();
-                    arguments.putString(MovieDetailFragment.ARG_ITEM_ID, title.getText().toString());
+                    arguments.putString(MovieDetailFragment.ARG_ITEM_ID, view.toString());
                     MovieDetailFragment fragment = new MovieDetailFragment();
                     fragment.setArguments(arguments);
                     getSupportFragmentManager().beginTransaction()
@@ -78,7 +76,7 @@ public class MovieListActivity extends AppCompatActivity {
                             .commit();
                 } else {
                     Intent intent = new Intent(getApplicationContext(), MovieDetailActivity.class);
-                    intent.putExtra(MovieDetailFragment.ARG_ITEM_ID, title.getText().toString());
+                    intent.putExtra(MovieDetailFragment.ARG_ITEM_ID, view.toString());
 
                     startActivity(intent);
                 }
@@ -146,7 +144,7 @@ public class MovieListActivity extends AppCompatActivity {
                 moviesJsonStr = buffer.toString();
 
                 try {
-                    return getMovieDataFromJson(moviesJsonStr, 10);
+                    return getMovieDataFromJson(moviesJsonStr, 12);
                 } catch (Exception e) {
                     Log.e(LOG_TAG, e.toString());
                 }
