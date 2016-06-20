@@ -42,6 +42,7 @@ public class MovieDetailFragment extends Fragment {
                 appBarLayout.setTitle(movie.getTitle());
             }
 
+            ((TextView) rootView.findViewById(R.id.movie_title)).setText(movie.getTitle());
             Picasso.with(getActivity()).load(movie.getImagePath())
                     .into((ImageView) rootView.findViewById(R.id.movie_image));
             ((TextView) rootView.findViewById(R.id.movie_plot)).setText(movie.getPlot());
