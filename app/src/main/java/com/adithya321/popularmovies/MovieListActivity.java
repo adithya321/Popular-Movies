@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -12,6 +13,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.ImageView;
 
 import com.adithya321.popularmovies.adapters.MoviesAdapter;
 import com.adithya321.popularmovies.model.Movie;
@@ -66,9 +68,13 @@ public class MovieListActivity extends AppCompatActivity {
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                ImageView imageView = (ImageView) view.findViewById(R.id.movie_image);
+
+                Bundle arguments = new Bundle();
                 if (mTwoPane) {
-                    Bundle arguments = new Bundle();
-                    arguments.putString(MovieDetailFragment.ARG_ITEM_ID, view.toString());
+                    arguments.putParcelable(MovieDetailFragment.ARG_ITEM_ID,
+                            (Parcelable) imageView.getTag());
                     MovieDetailFragment fragment = new MovieDetailFragment();
                     fragment.setArguments(arguments);
                     getSupportFragmentManager().beginTransaction()
@@ -76,8 +82,7 @@ public class MovieListActivity extends AppCompatActivity {
                             .commit();
                 } else {
                     Intent intent = new Intent(getApplicationContext(), MovieDetailActivity.class);
-                    intent.putExtra(MovieDetailFragment.ARG_ITEM_ID, view.toString());
-
+                    intent.putExtra(MovieDetailFragment.ARG_ITEM_ID, (Parcelable) imageView.getTag());
                     startActivity(intent);
                 }
             }
@@ -165,24 +170,22 @@ public class MovieListActivity extends AppCompatActivity {
 
         private Movie[] getMovieDataFromJson(String moviesJsonStr, int numMovies) throws JSONException {
 
-            final String TMDB_LIST = "results";
-            final String TMDB_TITLE = "title";
-            final String TMDB_POSTER = "poster_path";
-
             JSONObject moviesJson = new JSONObject(moviesJsonStr);
-            JSONArray moviesArray = moviesJson.getJSONArray(TMDB_LIST);
+            JSONArray moviesArray = moviesJson.getJSONArray("results");
 
             Movie[] resultMovies = new Movie[numMovies];
 
             for (int i = 0; i < numMovies; i++) {
                 JSONObject movieDetails = moviesArray.getJSONObject(i);
 
-                String title = movieDetails.getString(TMDB_TITLE);
-                String image = movieDetails.getString(TMDB_POSTER);
-
                 resultMovies[i] = new Movie();
-                resultMovies[i].setTitle(title);
-                resultMovies[i].setImagePath("http://image.tmdb.org/t/p/w185" + image);
+                resultMovies[i].setId(movieDetails.getInt("id"));
+                resultMovies[i].setTitle(movieDetails.getString("title"));
+                resultMovies[i].setImagePath("http://image.tmdb.org/t/p/w185" +
+                        movieDetails.getString("poster_path"));
+                resultMovies[i].setPlot(movieDetails.getString("overview"));
+                resultMovies[i].setRating(movieDetails.getDouble("vote_average"));
+                resultMovies[i].setReleaseDate(movieDetails.getString("release_date"));
             }
 
             return resultMovies;

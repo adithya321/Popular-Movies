@@ -35,6 +35,8 @@ public class MoviesAdapter extends ArrayAdapter<Movie> {
         ImageView imageView = (ImageView) convertView.findViewById(R.id.movie_image);
         Picasso.with(context).load(movie.getImagePath()).into(imageView);
 
+        imageView.setTag(movie);
+
         return convertView;
     }
 }
