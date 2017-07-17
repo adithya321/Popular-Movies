@@ -1,5 +1,24 @@
+/*
+ * Popular Movies
+ * Copyright (C) 2017 Adithya J
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
 package com.adithya321.popularmovies;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -69,7 +88,7 @@ public class MovieListActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-                ImageView imageView = (ImageView) view.findViewById(R.id.movie_image);
+                ImageView imageView = view.findViewById(R.id.movie_image);
 
                 Bundle arguments = new Bundle();
                 if (mTwoPane) {
@@ -108,88 +127,6 @@ public class MovieListActivity extends AppCompatActivity {
     private void setGridViewAdapter() {
         MoviesAdapter moviesAdapter = new MoviesAdapter(getApplicationContext(), movieList);
         gridView.setAdapter(moviesAdapter);
-    }
-
-    public class FetchMoviesTask extends AsyncTask<String, Void, Movie[]> {
-
-        private final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
-
-        @Override
-        protected Movie[] doInBackground(String... strings) {
-
-            HttpURLConnection urlConnection;
-            BufferedReader reader;
-            String moviesJsonStr;
-
-            try {
-                Uri builtUri = Uri.parse(strings[0]).buildUpon()
-                        .appendQueryParameter("api_key", getString(R.string.api_key))
-                        .build();
-
-                URL url = new URL(builtUri.toString());
-
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
-                if (inputStream == null) {
-                    return null;
-                }
-                reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                String line;
-                while ((line = reader.readLine()) != null)
-                    buffer.append(line + "\n");
-
-                if (buffer.length() == 0) {
-                    return null;
-                }
-                moviesJsonStr = buffer.toString();
-
-                try {
-                    return getMovieDataFromJson(moviesJsonStr, 12);
-                } catch (Exception e) {
-                    Log.e(LOG_TAG, e.toString());
-                }
-            } catch (Exception e) {
-                Log.e(LOG_TAG, e.toString());
-            }
-
-            return new Movie[0];
-        }
-
-        @Override
-        protected void onPostExecute(Movie[] movies) {
-            super.onPostExecute(movies);
-
-            movieList = new ArrayList<>(Arrays.asList(movies));
-            setGridViewAdapter();
-        }
-
-        private Movie[] getMovieDataFromJson(String moviesJsonStr, int numMovies) throws JSONException {
-
-            JSONObject moviesJson = new JSONObject(moviesJsonStr);
-            JSONArray moviesArray = moviesJson.getJSONArray("results");
-
-            Movie[] resultMovies = new Movie[numMovies];
-
-            for (int i = 0; i < numMovies; i++) {
-                JSONObject movieDetails = moviesArray.getJSONObject(i);
-
-                resultMovies[i] = new Movie();
-                resultMovies[i].setId(movieDetails.getInt("id"));
-                resultMovies[i].setTitle(movieDetails.getString("title"));
-                resultMovies[i].setImagePath("http://image.tmdb.org/t/p/w185" +
-                        movieDetails.getString("poster_path"));
-                resultMovies[i].setPlot(movieDetails.getString("overview"));
-                resultMovies[i].setRating(movieDetails.getDouble("vote_average"));
-                resultMovies[i].setReleaseDate(movieDetails.getString("release_date"));
-            }
-
-            return resultMovies;
-        }
     }
 
     @Override
@@ -244,5 +181,88 @@ public class MovieListActivity extends AppCompatActivity {
         outState.putParcelableArrayList("movieList", movieList);
         outState.putInt("sort", checkedMenuId);
         super.onSaveInstanceState(outState);
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    private class FetchMoviesTask extends AsyncTask<String, Void, Movie[]> {
+
+        private final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
+
+        @Override
+        protected Movie[] doInBackground(String... strings) {
+
+            HttpURLConnection urlConnection;
+            BufferedReader reader;
+            String moviesJsonStr;
+
+            try {
+                Uri builtUri = Uri.parse(strings[0]).buildUpon()
+                        .appendQueryParameter("api_key", getString(R.string.api_key))
+                        .build();
+
+                URL url = new URL(builtUri.toString());
+
+                urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.connect();
+
+                InputStream inputStream = urlConnection.getInputStream();
+                StringBuilder buffer = new StringBuilder();
+                if (inputStream == null) {
+                    return null;
+                }
+                reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                String line;
+                while ((line = reader.readLine()) != null)
+                    buffer.append(line).append("\n");
+
+                if (buffer.length() == 0) {
+                    return null;
+                }
+                moviesJsonStr = buffer.toString();
+
+                try {
+                    return getMovieDataFromJson(moviesJsonStr);
+                } catch (Exception e) {
+                    Log.e(LOG_TAG, e.toString());
+                }
+            } catch (Exception e) {
+                Log.e(LOG_TAG, e.toString());
+            }
+
+            return new Movie[0];
+        }
+
+        @Override
+        protected void onPostExecute(Movie[] movies) {
+            super.onPostExecute(movies);
+
+            movieList = new ArrayList<>(Arrays.asList(movies));
+            setGridViewAdapter();
+        }
+
+        private Movie[] getMovieDataFromJson(String moviesJsonStr) throws JSONException {
+
+            JSONObject moviesJson = new JSONObject(moviesJsonStr);
+            JSONArray moviesArray = moviesJson.getJSONArray("results");
+
+            Movie[] resultMovies = new Movie[12];
+
+            for (int i = 0; i < 12; i++) {
+                JSONObject movieDetails = moviesArray.getJSONObject(i);
+
+                resultMovies[i] = new Movie();
+                resultMovies[i].setId(movieDetails.getInt("id"));
+                resultMovies[i].setTitle(movieDetails.getString("title"));
+                resultMovies[i].setImagePath("http://image.tmdb.org/t/p/w185" +
+                        movieDetails.getString("poster_path"));
+                resultMovies[i].setPlot(movieDetails.getString("overview"));
+                resultMovies[i].setRating(movieDetails.getDouble("vote_average"));
+                resultMovies[i].setReleaseDate(movieDetails.getString("release_date"));
+            }
+
+            return resultMovies;
+        }
     }
 }
